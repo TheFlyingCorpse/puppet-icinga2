@@ -35,7 +35,7 @@ class icinga2::feature::influxdb (
     enable_send_metadata   => $enable_send_metadata,
     flush_interval         => $flush_interval,
     flush_threshold        => $flush_threshold,
-    target_dir             => '/etc/icinga2/features-available',
+    target_dir             => "${::icinga2::config_dir}/features-available",
   }
 
   ::icinga2::feature { 'influxdb':

@@ -25,7 +25,7 @@ define icinga2::object::influxdbwriter (
   $enable_send_metadata   = undef,
   $flush_interval         = 10,
   $flush_threshold        = 1024,
-  $target_dir             = '/etc/icinga2/objects/influxdbwriters',
+  $target_dir             = "${::icinga2::config_dir}/objects/influxdbwriters",
   $file_name              = "${name}.conf",
 ) {
   # Do some validation
