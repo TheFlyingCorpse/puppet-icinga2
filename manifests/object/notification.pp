@@ -48,7 +48,9 @@ define icinga2::object::notification (
   validate_array($user_groups)
   validate_hash($times)
   if $interval {
-    validate_re($interval, '^\d+m?$')
+    if $::kernel != 'windows' {
+      validate_re($interval, '^\d+m?$')
+    }
   }
   if $period {
     validate_string($period)

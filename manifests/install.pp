@@ -4,13 +4,24 @@
 #
 class icinga2::install {
 
-  package { 'icinga2':
-    ensure   => $::icinga2::package_ensure,
+  if $::kernel == 'windows' {
+    package { 'Icinga 2':
+      ensure => $::icinga2::package_ensure,
+    }
+    validate_bool($::icinga2::manage_service)
+    if $::icinga2::manage_service == true {
+      Package['Icinga 2'] ~> Class['::icinga2::service']
+    }
   }
+  else {
+    package { 'icinga2':
+      ensure   => $::icinga2::package_ensure,
+    }
 
-  validate_bool($::icinga2::manage_service)
-  if $::icinga2::manage_service == true {
-    Package['icinga2'] ~> Class['::icinga2::service']
+    validate_bool($::icinga2::manage_service)
+    if $::icinga2::manage_service == true {
+      Package['icinga2'] ~> Class['::icinga2::service']
+    }
   }
 
   validate_bool($::icinga2::install_plugins)
