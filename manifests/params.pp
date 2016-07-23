@@ -111,6 +111,23 @@ class icinga2::params {
       # Icinga2 client settings
       $checkplugin_libdir   = '/usr/local/libexec/nagios'
     }
+    'windows': {
+      # Catch pre-Vista OS
+      if $::kernel < "6.0" {
+        fail("${::operatingsystemrelease} is not supported!")
+      }
+      $plugin_packages = undef
+      $mail_package = undef
+
+      # Settings for /etc/icinga2/:
+      $config_owner = 'Administrators'
+      $config_group = 'Administrators'
+
+      $config_dir   = "${::icinga2_programdata}/etc/icinga2"
+      $sbin_dir     = "${::icinga2_installdir}/sbin"
+      $share_dir    = "${::icinga2_installdir}/share"
+      $var_dir      = "${::icinga2_programdata}/var"
+    }
     #Fail if we're on any other OS:
     default: { fail("${::operatingsystem} is not supported!") }
   }
