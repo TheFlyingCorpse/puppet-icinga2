@@ -31,7 +31,9 @@ define icinga2::object::icingastatuswriter (
   validate_string($target_file_name)
   validate_string($target_file_owner)
   validate_string($target_file_group)
-  validate_re($target_file_mode, '^\d{4}$')
+  if $::kernel != 'windows' {
+    validate_re($target_file_mode, '^\d{4}$')
+  }
 
   file {"${target_dir}/${target_file_name}":
     ensure  => $ensure,
