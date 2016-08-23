@@ -788,6 +788,16 @@ Notes on specific parameters:
 
 * `groups`: must be specified as a [Puppet array](https://docs.puppetlabs.com/puppet/latest/reference/lang_datatypes.html#arrays), even if there's only one element
 * `vars`: must be specified as a [Puppet hash](https://docs.puppetlabs.com/puppet/latest/reference/lang_datatypes.html#hashes), with the Icinga 2 variable as the **key** and the variable's value as the **value**
+* `custom_prepend` and `custom_append`: must be specified as [Puppet arrays](https://docs.puppetlabs.com/puppet/latest/reference/lang_datatypes.html#arrays), even if there's only one element. This allows to define free form text which will be inserted either in the beginning, or end of the hosts definition, i.e.
+
+<pre>
+    custom_append => [
+      'vars += { disks["disk"] = {} }',
+    ]
+</pre>
+
+will add the literal line 'vars += { disks["disk"] = {} }' to the host definition. This helps overcoming limitations about quoting especially in the `vars` hash.
+This also allows to add comments to the hosts file.
 
 **Note:** The `ipv6_address` parameter is set to **undef** by default. This is because `facter` can return either IPv4 or IPv6 addresses for the `ipaddress_ethX` facts. The default value for the `ipv6_address` parameter is set to **undef** and not `ipaddress_eth0` so that an IPv4 address isn't unintentionally set as the value for `address6` in the rendered host object definition.
 
@@ -1168,7 +1178,16 @@ See [SyslogLogger](http://docs.icinga.org/icinga2/latest/doc/module/icinga2/chap
 
 ####[`icinga2::object::user`](id:object_user)
 
-Coming soon...
+This defined type creates **User** objects.
+
+<pre>
+icinga2::object::user { 'some_user':
+  display_name => 'Some User',
+  email        => 'some.user@example.org',
+  groups       => ['icingaadmins'],
+  target_dir   => '/etc/icinga2/zones.d/global_zone',
+}
+</pre>
 
 ####[`icinga2::object::usergroup`](id:object_usergroup)
 
@@ -1239,6 +1258,8 @@ See [Zone](http://docs.icinga.org/icinga2/latest/doc/module/icinga2/chapter/obje
 ---------
 
 You can use hiera to create icinga 2 objects in your server.
+To use this feature one has to include or contain the class `::icinga2::objects`.
+This class will autoload every hash found in Hiera.
 
 Example usage:
 json file
@@ -1268,6 +1289,18 @@ json file
   }
   ...
 }
+</pre>
+
+yaml file
+
+<pre>
+icinga2::object::hostgroup:
+  office-a:
+    display_name: 'Office A'
+    assign_where: 'host.vars.location == "office-a"'
+  datacenter-b:
+    display_name: 'Datacenter B'
+    assign_where: 'host.vars.location == "datacenter-b"'
 </pre>
 
 Objects available:
