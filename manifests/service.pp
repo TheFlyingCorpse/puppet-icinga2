@@ -27,6 +27,7 @@ class icinga2::service {
       hasrestart => true,
       restart    => $::icinga2::restart_cmd,
     }
+  }
   else {
     $config_stamp = "${::icinga2::var_dir}/lib/icinga2/puppet-config-stamp.txt"
 
