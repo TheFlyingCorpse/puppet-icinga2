@@ -3,24 +3,26 @@
 # Takes care about requesting SSL certificates for the Icinga daemon
 #
 class icinga2::pki::icinga (
-  $ticket_salt,
-  $icinga_ca_host,
-  $icinga_ca_port = undef,
-  $hostname       = $::fqdn,
+  $hostname              = $::fqdn,
+  $icinga_ca_host        = undef,
+  $icinga_ca_port        = 5665,
+  $icinga_api_username   = undef,
+  $icinga_api_password   = undef,
+  $icinga_ca_path        = undef,
+  $icinga_ssl_verify     = true,
 ) {
 
-  validate_string($ticket_salt)
   validate_string($icinga_ca_host)
-
-  if $icinga_ca_port {
-    validate_numeric($icinga_ca_port)
-    $_icinga_ca_port = " --port '${icinga_ca_port}'"
+  validate_numeric($icinga_ca_port)
+  validate_bool($icinga_ssl_verify)
+  validate_string($hostname)
+  validate_string($icinga_api_username)
+  validate_string($icinga_api_password)
+  if $icinga_ssl_verify {
+    validate_string($icinga_ca_path)
   }
-  else {
-    $_icinga_ca_port = ''
-  }
 
-  $ticket_id = icinga2_ticket_id($::fqdn, $ticket_salt)
+  $ticket_hash = icinga2_ticket_hash($icinga_ca_host,$icinga_ca_port,$icinga_api_username,$icinga_api_password,$icinga_ca_path,$icinga_ssl_verify,$hostname)
 
   $pki_dir = "${::icinga2::config_dir}/pki"
   $ca = "${pki_dir}/ca.crt"
@@ -40,7 +42,7 @@ class icinga2::pki::icinga (
   }
 
   exec { 'icinga2 pki create key':
-    command => "icinga2 pki new-cert --cn '${hostname}' --key '${key}' --cert '${cert}'",
+    command => "icinga2 pki new-cert --hostname '${hostname}' --key '${key}' --cert '${cert}'",
     creates => $key,
   } ->
   file {
@@ -50,14 +52,14 @@ class icinga2::pki::icinga (
   } ->
 
   exec { 'icinga2 pki get trusted-cert':
-    command => "icinga2 pki save-cert --host '${icinga_ca_host}'${_icinga_ca_port} --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}'",
+    command => "icinga2 pki save-cert --host '${icinga_ca_host}' --port ${icinga_ca_port} --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}'",
     creates => $trusted_cert,
   } ->
   file { $trusted_cert:
   } ->
 
   exec { 'icinga2 pki request':
-    command => "icinga2 pki request --host '${icinga_ca_host}'${_icinga_ca_port} --ca '${ca}' --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}' --ticket '${ticket_id}'",
+    command => "icinga2 pki request --host '${icinga_ca_host}' --port ${icinga_ca_port} --ca '${ca}' --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}' --ticket '${ticket_hash}'",
     creates => $ca,
   } ->
   file { $ca:
