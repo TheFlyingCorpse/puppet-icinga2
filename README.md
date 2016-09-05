@@ -266,10 +266,10 @@ class { '::icinga':
 }
 
 class { '::icinga2::pki::icinga':
-  icinga_ca_host        => 'ryglov42.labdomain.net',
+  icinga_ca_host        => 'icinga2master.example.com',
   icinga_ca_port        => '5665',
   icinga_api_username   => 'client-pki-ticket',
-  icinga_api_password   => 'ABC123',
+  icinga_api_password   => 'AOPIGDNJu8972gfhub2u2fhj',
   icinga_ssl_verify     => false,
   hostname              => $::fqdn,
 }
