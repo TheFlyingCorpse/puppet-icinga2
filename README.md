@@ -258,7 +258,36 @@ You should validate the reload command for your operatingsystem.
 
 ### PKI
 
-To use the external CA of puppet add `::icinga2::pki::puppet` to your setup.
+To use the internal CA of icinga2 (recommended), add the following to your setup:
+Icinga2 clients:
+```
+class { '::icinga':
+  ...
+}
+
+class { '::icinga2::pki::icinga':
+  icinga_ca_host        => 'ryglov42.labdomain.net',
+  icinga_ca_port        => '5665',
+  icinga_api_username   => 'client-pki-ticket',
+  icinga_api_password   => 'ABC123',
+  icinga_ssl_verify     => false,
+  hostname              => $::fqdn,
+}
+```
+Icinga master/CA must contain:
+```
+class { '::icinga':
+  ...
+}
+class { '::icinga2::pki::icinga': }
+
+icinga2::object::apiuser { 'client-pki-ticket':
+  password => 'AOPIGDNJu8972gfhub2u2fhj',
+}
+```
+`::icinga2::pki::icinga` to your setup.
+
+To use the external CA of puppet (not recommended) add `::icinga2::pki::puppet` to your setup.
 
 Example usage:
 
