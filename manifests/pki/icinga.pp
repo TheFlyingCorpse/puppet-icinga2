@@ -3,24 +3,27 @@
 # Takes care about requesting SSL certificates for the Icinga daemon
 #
 class icinga2::pki::icinga (
-  $ticket_salt,
-  $icinga_ca_host,
-  $icinga_ca_port = undef,
-  $hostname       = $::fqdn,
+  $icinga2_ca_host,
+  $icinga2_ca_port        = undef,
+  $icinga2_api_user       = undef,
+  $icinga2_api_password   = undef,
+  $icinga2_api_ssl_verify = true,
+  $icinga2_ca_file        = undef,
+  $hostname              = $::fqdn,
 ) {
 
   validate_string($ticket_salt)
   validate_string($icinga_ca_host)
 
-  if $icinga_ca_port {
-    validate_numeric($icinga_ca_port)
-    $_icinga_ca_port = " --port '${icinga_ca_port}'"
-  }
-  else {
-    $_icinga_ca_port = ''
+  unless $icinga_ca_port {
+    $icinga_ca_port = 5665
   }
 
-  $ticket_id = icinga2_ticket_id($::fqdn, $ticket_salt)
+  validate_numeric($icinga_ca_port)
+  $_icinga_ca_port = " --port '${icinga_ca_port}'"
+
+  #$ticket_id = icinga2_ticket_id($::fqdn, $ticket_salt)
+  $ticket_hash = icinga2_ticket_hash($icinga2_ca_host, $icinga2_ca_port, $icinga2_api_user, $icinga2_api_password, $icinga2_api_ssl_verify, $hostname)
 
   $pki_dir = "${::icinga2::config_dir}/pki"
   $ca = "${pki_dir}/ca.crt"
@@ -50,14 +53,14 @@ class icinga2::pki::icinga (
   } ->
 
   exec { 'icinga2 pki get trusted-cert':
-    command => "icinga2 pki save-cert --host '${icinga_ca_host}'${_icinga_ca_port} --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}'",
+    command => "icinga2 pki save-cert --host '${icinga2_ca_host}'${_icinga2_ca_port} --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}'",
     creates => $trusted_cert,
   } ->
   file { $trusted_cert:
   } ->
 
   exec { 'icinga2 pki request':
-    command => "icinga2 pki request --host '${icinga_ca_host}'${_icinga_ca_port} --ca '${ca}' --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}' --ticket '${ticket_id}'",
+    command => "icinga2 pki request --host '${icinga2_ca_host}'${_icinga2_ca_port} --ca '${ca}' --key '${key}' --cert '${cert}' --trustedcert '${trusted_cert}' --ticket '${ticket_id}'",
     creates => $ca,
   } ->
   file { $ca:
