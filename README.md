@@ -258,6 +258,7 @@ You should validate the reload command for your operatingsystem.
 
 ### PKI
 
+#### Icinga2 as CA
 To use the internal CA of icinga2 (recommended), add the following to your setup:
 Icinga2 clients:
 ```
@@ -285,8 +286,8 @@ icinga2::object::apiuser { 'client-pki-ticket':
   password => 'AOPIGDNJu8972gfhub2u2fhj',
 }
 ```
-`::icinga2::pki::icinga` to your setup.
 
+#### Puppet as a CA
 To use the external CA of puppet (not recommended) add `::icinga2::pki::puppet` to your setup.
 
 Example usage:
